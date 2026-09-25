@@ -1,0 +1,53 @@
+{
+  "name": "KidsFlix 🍿 | نيتفلكس للأطفال",
+  "short_name": "KidsFlix",
+  "description": "Watch 140,000+ free classic animation, movies & cartoons for kids powered by Internet Archive. Zero ads, 100% kid-safe.",
+  "start_url": "/",
+  "id": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#07090e",
+  "theme_color": "#ff2a6d",
+  "orientation": "any",
+  "lang": "en",
+  "categories": ["entertainment", "kids", "movies"],
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Animations",
+      "short_name": "Cartoons",
+      "url": "/?category=animation",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Sci-Fi & Space",
+      "short_name": "Sci-Fi",
+      "url": "/?category=scifi",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Retro Games",
+      "short_name": "Games",
+      "url": "/?category=game",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}

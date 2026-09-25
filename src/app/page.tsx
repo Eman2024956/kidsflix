@@ -6,6 +6,8 @@ import { HeroBanner } from "@/components/HeroBanner";
 import { MovieRow } from "@/components/MovieRow";
 import { VideoGridTable } from "@/components/VideoGridTable";
 import { MoviePlayerModal } from "@/components/MoviePlayerModal";
+import { MobileBottomNav } from "@/components/MobileBottomNav";
+import { PwaRegistrar } from "@/components/PwaRegistrar";
 import { CURATED_CARTOONS } from "@/data/curatedCartoons";
 import { Movie, KidProfile } from "@/types/movie";
 import { Film, Search, Grid, Rows3 } from "lucide-react";
@@ -520,6 +522,26 @@ export default function Home() {
           </div>
         </div>
       </footer>
+
+      {/* PWA Service Worker & Install Banner */}
+      <PwaRegistrar isArabic={isArabic} />
+
+      {/* Mobile Bottom Navigation Bar (Visible on phone/tablet) */}
+      <MobileBottomNav
+        activeCategory={activeCategory}
+        onSelectCategory={handleSelectCategory}
+        watchlistCount={watchlist.length}
+        isArabic={isArabic}
+        theme={theme}
+        onToggleTheme={toggleTheme}
+        onOpenSearch={() => {
+          window.scrollTo({ top: 0, behavior: "smooth" });
+          const searchInput = document.querySelector('input[type="text"]') as HTMLInputElement | null;
+          if (searchInput) {
+            searchInput.focus();
+          }
+        }}
+      />
     </div>
   );
 }

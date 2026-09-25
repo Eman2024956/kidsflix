@@ -350,9 +350,10 @@ export const Navbar: React.FC<NavbarProps> = ({
 
       {/* Categories Bar with Dynamic Counters */}
       <div
+        id="categories-carousel"
         style={{
           borderTop: theme === "light" ? "1px solid rgba(0, 0, 0, 0.06)" : "1px solid rgba(255, 255, 255, 0.06)",
-          padding: "8px 24px",
+          padding: "8px 16px",
           background: theme === "light" ? "rgba(255, 255, 255, 0.7)" : "rgba(10, 14, 24, 0.6)",
         }}
       >
@@ -365,6 +366,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             gap: "8px",
             overflowX: "auto",
             scrollbarWidth: "none",
+            WebkitOverflowScrolling: "touch",
             paddingBottom: "4px",
           }}
         >
@@ -397,6 +399,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   cursor: "pointer",
                   boxShadow: isActive ? "0 4px 15px rgba(255, 42, 109, 0.4)" : "none",
                   transition: "all 0.2s ease",
+                  touchAction: "manipulation",
                 }}
               >
                 <span>{cat.icon}</span>
@@ -427,6 +430,12 @@ export const Navbar: React.FC<NavbarProps> = ({
           }
           .profile-name-span {
             display: inline !important;
+          }
+        }
+        @media (max-width: 640px) {
+          .navbar-top-row {
+            padding: 10px 14px !important;
+            gap: 10px !important;
           }
         }
       `}</style>

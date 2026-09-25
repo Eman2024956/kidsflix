@@ -119,7 +119,7 @@ export const VideoGridTable: React.FC<VideoGridTableProps> = ({
   const endIdx = Math.min(currentPage * rowsPerPage, totalCount);
 
   return (
-    <div id="grid-table-top" style={{ maxWidth: "1480px", margin: "0 auto", padding: "20px 24px 60px 24px" }}>
+    <div id="grid-table-top" className="grid-table-wrapper">
       {/* Header Bar: Title, Counters, Sort Controls */}
       <div
         style={{
@@ -512,6 +512,19 @@ export const VideoGridTable: React.FC<VideoGridTableProps> = ({
       )}
 
       <style jsx>{`
+        /* Grid table wrapper */
+        .grid-table-wrapper {
+          max-width: 1480px;
+          margin: 0 auto;
+          padding: 20px 24px 80px 24px;
+        }
+
+        @media (max-width: 768px) {
+          .grid-table-wrapper {
+            padding: 12px 12px 100px 12px;
+          }
+        }
+
         /* Exactly 6 columns on desktop */
         .six-col-grid {
           display: grid;
@@ -542,14 +555,14 @@ export const VideoGridTable: React.FC<VideoGridTableProps> = ({
         @media (max-width: 768px) {
           .six-col-grid {
             grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 12px;
+            gap: 10px;
           }
         }
 
         @media (max-width: 480px) {
           .six-col-grid {
             grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 10px;
+            gap: 8px;
           }
         }
 
@@ -562,12 +575,27 @@ export const VideoGridTable: React.FC<VideoGridTableProps> = ({
           box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
           cursor: pointer;
           transition: all 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+          -webkit-tap-highlight-color: transparent;
+          touch-action: manipulation;
         }
 
         .grid-card:hover {
           transform: translateY(-6px) scale(1.02);
           border-color: rgba(255, 42, 109, 0.7);
           box-shadow: 0 14px 28px rgba(0, 0, 0, 0.8), 0 0 20px rgba(255, 42, 109, 0.4);
+        }
+
+        @media (max-width: 768px) {
+          .grid-card {
+            border-radius: 10px;
+          }
+          .grid-card:hover {
+            transform: none;
+          }
+          .grid-card:active {
+            transform: scale(0.96);
+            border-color: rgba(255, 42, 109, 0.7);
+          }
         }
 
         .grid-card-media {
@@ -613,6 +641,7 @@ export const VideoGridTable: React.FC<VideoGridTableProps> = ({
           backdrop-filter: blur(6px);
           z-index: 3;
           transition: transform 0.2s ease;
+          touch-action: manipulation;
         }
 
         .grid-card-heart:hover {
@@ -635,6 +664,13 @@ export const VideoGridTable: React.FC<VideoGridTableProps> = ({
         .grid-card:hover .grid-card-play-hover {
           opacity: 1;
           transform: scale(1);
+        }
+
+        @media (max-width: 768px) {
+          .grid-card-play-hover {
+            opacity: 1;
+            transform: scale(0.7);
+          }
         }
 
         .grid-play-circle {
@@ -660,6 +696,8 @@ export const VideoGridTable: React.FC<VideoGridTableProps> = ({
           border-radius: 12px;
           cursor: pointer;
           transition: all 0.2s ease;
+          touch-action: manipulation;
+          -webkit-tap-highlight-color: transparent;
         }
 
         .pagination-btn:hover:not(:disabled) {
@@ -670,6 +708,15 @@ export const VideoGridTable: React.FC<VideoGridTableProps> = ({
         .pagination-btn:disabled {
           opacity: 0.35;
           cursor: not-allowed;
+        }
+
+        @media (max-width: 480px) {
+          .pagination-btn span {
+            display: none;
+          }
+          .pagination-btn {
+            padding: 8px;
+          }
         }
 
         .pagination-num-btn {
@@ -686,6 +733,7 @@ export const VideoGridTable: React.FC<VideoGridTableProps> = ({
           font-size: 0.9rem;
           cursor: pointer;
           transition: all 0.2s ease;
+          touch-action: manipulation;
         }
 
         .pagination-num-btn:hover:not(.active) {
@@ -696,6 +744,14 @@ export const VideoGridTable: React.FC<VideoGridTableProps> = ({
           background: var(--gradient-kids);
           border-color: rgba(255, 42, 109, 0.6);
           box-shadow: 0 4px 15px rgba(255, 42, 109, 0.45);
+        }
+
+        @media (max-width: 480px) {
+          .pagination-num-btn {
+            min-width: 32px;
+            height: 32px;
+            font-size: 0.8rem;
+          }
         }
       `}</style>
     </div>

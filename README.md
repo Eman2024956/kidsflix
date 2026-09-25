@@ -404,3 +404,216 @@ curl "https://archive.org/advancedsearch.php?q=mediatype:movies+AND+(subject:edu
 
 ---
 
+## 📊 Fetching Category Names & Counters from Archive.org
+
+Archive.org does **not** expose a dedicated "list of categories" endpoint — but you can
+query **`advancedsearch.php`** with `rows=0` (zero results) to get an exact count for any
+subject tag. This is exactly how KidsFlix builds its live category counters.
+
+### How it Works
+
+```
+https://archive.org/advancedsearch.php
+  ?q=<solr-query>   ← the filter
+  &rows=0           ← no items returned, just the count
+  &output=json      ← JSON format
+```
+
+The key field in the response is **`.response.numFound`**.
+
+---
+
+### 1. Get Count for Every KidsFlix Category
+
+```bash
+# ══════════════════════════════════════════════════════════
+# 🎬  Animation (classic cartoons)
+# ══════════════════════════════════════════════════════════
+curl -s "https://archive.org/advancedsearch.php?q=mediatype:movies+AND+subject:animation+-subject:deemphasize+-subject:mature+-subject:adult&rows=0&output=json" \
+  | jq '"Animation: \(.response.numFound)"'
+
+# ══════════════════════════════════════════════════════════
+# 🚀  Space & Sci-Fi
+# ══════════════════════════════════════════════════════════
+curl -s "https://archive.org/advancedsearch.php?q=mediatype:movies+AND+(subject:%22science+fiction%22+OR+subject:space+OR+subject:astronomy)+-subject:deemphasize+-subject:mature&rows=0&output=json" \
+  | jq '"Sci-Fi: \(.response.numFound)"'
+
+# ══════════════════════════════════════════════════════════
+# 🐾  Animals & Nature
+# ══════════════════════════════════════════════════════════
+curl -s "https://archive.org/advancedsearch.php?q=mediatype:movies+AND+(subject:animals+OR+subject:wildlife+OR+subject:nature)+-subject:deemphasize+-subject:mature&rows=0&output=json" \
+  | jq '"Animals & Nature: \(.response.numFound)"'
+
+# ══════════════════════════════════════════════════════════
+# 😂  Comedy & Laughs
+# ══════════════════════════════════════════════════════════
+curl -s "https://archive.org/advancedsearch.php?q=mediatype:movies+AND+(subject:slapstick+OR+subject:comedy+OR+subject:humor)+-subject:deemphasize+-subject:mature&rows=0&output=json" \
+  | jq '"Comedy: \(.response.numFound)"'
+
+# ══════════════════════════════════════════════════════════
+# 🧠  Science & Educational
+# ══════════════════════════════════════════════════════════
+curl -s "https://archive.org/advancedsearch.php?q=mediatype:movies+AND+(subject:educational+OR+subject:science+OR+subject:discovery)+-subject:deemphasize+-subject:mature&rows=0&output=json" \
+  | jq '"Science & Education: \(.response.numFound)"'
+
+# ══════════════════════════════════════════════════════════
+# 🎮  Games & Gameplay
+# ══════════════════════════════════════════════════════════
+curl -s "https://archive.org/advancedsearch.php?q=mediatype:movies+AND+(subject:gameplay+OR+subject:speedrun+OR+subject:videogame+OR+subject:nintendo)+-subject:deemphasize&rows=0&output=json" \
+  | jq '"Games: \(.response.numFound)"'
+
+# ══════════════════════════════════════════════════════════
+# 🎨  Art & Stop Motion
+# ══════════════════════════════════════════════════════════
+curl -s "https://archive.org/advancedsearch.php?q=mediatype:movies+AND+(subject:art+OR+subject:%22stop+motion%22+OR+subject:puppetoons)+-subject:deemphasize+-subject:mature&rows=0&output=json" \
+  | jq '"Art & Stop Motion: \(.response.numFound)"'
+
+# ══════════════════════════════════════════════════════════
+# 📽️  Real Film (live-action classic cinema)
+# ══════════════════════════════════════════════════════════
+curl -s "https://archive.org/advancedsearch.php?q=mediatype:movies+AND+(subject:comedy+OR+collection:feature_films)+-subject:animation+-subject:deemphasize+-subject:mature&rows=0&output=json" \
+  | jq '"Real Film: \(.response.numFound)"'
+
+# ══════════════════════════════════════════════════════════
+# ⚓  Popeye The Sailor
+# ══════════════════════════════════════════════════════════
+curl -s "https://archive.org/advancedsearch.php?q=mediatype:movies+AND+(title:popeye+OR+subject:popeye)+-subject:deemphasize&rows=0&output=json" \
+  | jq '"Popeye: \(.response.numFound)"'
+
+# ══════════════════════════════════════════════════════════
+# 🦸  Superheroes (Golden Age Superman)
+# ══════════════════════════════════════════════════════════
+curl -s "https://archive.org/advancedsearch.php?q=mediatype:movies+AND+(title:superman+OR+subject:superman)+AND+subject:animation+-subject:deemphasize&rows=0&output=json" \
+  | jq '"Superheroes: \(.response.numFound)"'
+
+# ══════════════════════════════════════════════════════════
+# 🏰  Fairytales & Stories
+# ══════════════════════════════════════════════════════════
+curl -s "https://archive.org/advancedsearch.php?q=mediatype:movies+AND+(fairy+OR+tales+OR+cinderella+OR+casper)+-subject:deemphasize+-subject:mature&rows=0&output=json" \
+  | jq '"Fairytales: \(.response.numFound)"'
+```
+
+---
+
+### 2. Fetch All Counts in One Shell Script
+
+Run this in your terminal to get **all category counters at once**:
+
+```bash
+#!/bin/bash
+# kidsflix-count-all.sh — fetch all KidsFlix category counts from Archive.org
+
+BASE="https://archive.org/advancedsearch.php"
+SAFE="-subject:deemphasize+-subject:mature+-subject:inappropriate+-subject:adult+-subject:nsfw"
+
+declare -A categories=(
+  ["🎬 Animation"]="mediatype:movies+AND+subject:animation"
+  ["🚀 Sci-Fi"]="mediatype:movies+AND+(subject:%22science+fiction%22+OR+subject:space+OR+subject:astronomy)"
+  ["🐾 Animals"]="mediatype:movies+AND+(subject:animals+OR+subject:wildlife+OR+subject:nature)"
+  ["😂 Comedy"]="mediatype:movies+AND+(subject:slapstick+OR+subject:comedy+OR+subject:humor)"
+  ["🧠 Science"]="mediatype:movies+AND+(subject:educational+OR+subject:science+OR+subject:discovery)"
+  ["🎮 Games"]="mediatype:movies+AND+(subject:gameplay+OR+subject:speedrun+OR+subject:videogame)"
+  ["🎨 Art"]="mediatype:movies+AND+(subject:art+OR+subject:%22stop+motion%22+OR+subject:puppetoons)"
+  ["📽️ Real Film"]="mediatype:movies+AND+(collection:feature_films+OR+subject:comedy)+-subject:animation"
+  ["⚓ Popeye"]="mediatype:movies+AND+(title:popeye+OR+subject:popeye)"
+  ["🦸 Superheroes"]="mediatype:movies+AND+title:superman+AND+subject:animation"
+  ["🏰 Fairytales"]="mediatype:movies+AND+(fairy+OR+tales+OR+cinderella+OR+casper)"
+)
+
+echo "╔══════════════════════════════════════════╗"
+echo "║  KidsFlix — Archive.org Category Counts  ║"
+echo "╚══════════════════════════════════════════╝"
+
+for label in "${!categories[@]}"; do
+  query="${categories[$label]}+${SAFE}"
+  count=$(curl -s "${BASE}?q=${query}&rows=0&output=json" | python3 -c "import sys,json; print(json.load(sys.stdin)['response']['numFound'])")
+  printf "  %-22s %s\n" "$label" "$count"
+done
+```
+
+> **Run it:**
+> ```bash
+> chmod +x kidsflix-count-all.sh
+> ./kidsflix-count-all.sh
+> ```
+
+---
+
+### 3. Discover Subject Tags Used in a Collection
+
+Want to find what **subject tags** Archive.org actually uses for a given item or collection?
+
+```bash
+# ── Get all subject tags for a single item ──
+curl -s "https://archive.org/metadata/popeye_the_sailor_1933" \
+  | jq '.metadata.subject'
+
+# ── Get subject tags for Big Buck Bunny ──
+curl -s "https://archive.org/metadata/BigBuckBunny_328" \
+  | jq '.metadata.subject'
+
+# ── List subject tags from top 5 animation results ──
+curl -s "https://archive.org/advancedsearch.php?q=mediatype:movies+AND+subject:animation&fl[]=subject&rows=5&output=json" \
+  | jq '[.response.docs[].subject] | flatten | unique | sort'
+
+# ── Browse what collections exist for movies ──
+curl -s "https://archive.org/advancedsearch.php?q=mediatype:movies&fl[]=collection&rows=10&output=json" \
+  | jq '[.response.docs[].collection] | flatten | unique | sort'
+
+# ── Find how many items are tagged "deemphasize" (the adult/warning flag) ──
+curl -s "https://archive.org/advancedsearch.php?q=mediatype:movies+AND+subject:deemphasize&rows=0&output=json" \
+  | jq '"Flagged/blocked items: \(.response.numFound)"'
+
+# ── Check if a specific identifier is flagged ──
+curl -s "https://archive.org/metadata/some_identifier" \
+  | jq '.metadata.subject | if type == "array" then . else [.] end | map(select(. == "deemphasize")) | length > 0 | if . then "FLAGGED ⚠️" else "Safe ✅" end'
+```
+
+---
+
+### 4. Explore Archive.org Facets (Subject Tag Distribution)
+
+The Solr engine behind Archive.org supports **faceted search** — counting how many items share each subject tag:
+
+```bash
+# ── Get the top 20 most common subjects in movies ──
+curl -s "https://archive.org/advancedsearch.php?q=mediatype:movies&rows=0&output=json&facet=true&facet.field=subject&facet.limit=20" \
+  | jq '.response.facets.subject // "facets not supported in this response"'
+
+# ── Count items by mediatype ──
+curl -s "https://archive.org/advancedsearch.php?q=subject:animation&rows=0&output=json" \
+  | jq '{total: .response.numFound}'
+
+# ── Full movies archive size (all mediatypes) ──
+curl -s "https://archive.org/advancedsearch.php?q=mediatype:movies&rows=0&output=json" \
+  | jq '"Total Archive.org movies: \(.response.numFound)"'
+
+# ── Total public domain items across all types ──
+curl -s "https://archive.org/advancedsearch.php?q=licenseurl:*publicdomain*&rows=0&output=json" \
+  | jq '"Public Domain items: \(.response.numFound)"'
+```
+
+---
+
+### 5. API Response Structure Reference
+
+```
+advancedsearch.php response
+├── responseHeader
+│   ├── status        (0 = success)
+│   └── params        (echoes your query params)
+└── response
+    ├── numFound      ← ✅ THE TOTAL COUNT
+    ├── start         (offset of first result)
+    └── docs[]        (array of matching items, empty when rows=0)
+        ├── identifier
+        ├── title
+        ├── description
+        ├── subject     ← category/tag array
+        ├── collection  ← archive collection name
+        ├── year
+        ├── downloads
+        └── rating
+```
+
+---

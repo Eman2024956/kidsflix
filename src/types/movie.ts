@@ -57,6 +57,8 @@ export interface MovieDetailResponse {
   posterUrl: string;
   videoUrl?: string;
   files: MovieFile[];
+  blocked?: boolean;
+  blockReason?: string;
 }
 
 export interface KidProfile {

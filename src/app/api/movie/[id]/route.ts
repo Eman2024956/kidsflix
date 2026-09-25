@@ -20,6 +20,8 @@ interface ArchiveMetadataRaw {
     year?: string;
     date?: string;
     licenseurl?: string;
+    subject?: string | string[];
+    collection?: string | string[];
   };
   files?: ArchiveMetadataFile[];
 }
@@ -51,6 +53,48 @@ export async function GET(
     }
 
     const data: ArchiveMetadataRaw = await res.json();
+
+    // Check for inappropriate or offensive content warnings in metadata
+    const metaSubject = data.metadata?.subject;
+    const metaCollection = data.metadata?.collection;
+    const textToCheck = [
+      data.metadata?.title || "",
+      data.metadata?.description || "",
+      Array.isArray(metaSubject) ? metaSubject.join(" ") : String(metaSubject || ""),
+      Array.isArray(metaCollection) ? metaCollection.join(" ") : String(metaCollection || ""),
+    ]
+      .join(" ")
+      .toLowerCase();
+
+    const isUnsafe =
+      textToCheck.includes("inappropriate or offensive") ||
+      textToCheck.includes("some may find inappropriate") ||
+      textToCheck.includes("content warning") ||
+      textToCheck.includes("contains content some may find") ||
+      textToCheck.includes("deemphasize") ||
+      textToCheck.includes("not suitable for children") ||
+      textToCheck.includes("mature") ||
+      textToCheck.includes("nudity") ||
+      textToCheck.includes("nsfw") ||
+      textToCheck.includes("erotic") ||
+      textToCheck.includes("porn");
+
+    if (isUnsafe) {
+      return NextResponse.json({
+        success: true,
+        movie: {
+          identifier: id,
+          title: data.metadata?.title || "Blocked Content",
+          description: "This item contains content some may find inappropriate or offensive and has been blocked by the Kid-Safe filter.",
+          embedUrl: "",
+          posterUrl: `https://archive.org/services/img/${id}`,
+          files: [],
+          blocked: true,
+          blockReason: "This item contains content some may find inappropriate or offensive.",
+        },
+      });
+    }
+
     const files: ArchiveMetadataFile[] = data.files || [];
 
     // Filter MP4/video files

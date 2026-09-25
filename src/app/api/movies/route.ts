@@ -20,6 +20,53 @@ function cleanDescription(desc?: string): string {
   return stripped;
 }
 
+function isItemKidSafe(doc: {
+  title?: unknown;
+  description?: unknown;
+  identifier?: unknown;
+  subject?: unknown;
+}): boolean {
+  const textToCheck = [
+    Array.isArray(doc.title) ? doc.title.join(" ") : String(doc.title || ""),
+    Array.isArray(doc.description) ? doc.description.join(" ") : String(doc.description || ""),
+    String(doc.identifier || ""),
+    Array.isArray(doc.subject) ? doc.subject.join(" ") : String(doc.subject || ""),
+  ]
+    .join(" ")
+    .toLowerCase();
+
+  // Exact phrases used by Internet Archive warnings
+  if (
+    textToCheck.includes("inappropriate or offensive") ||
+    textToCheck.includes("some may find inappropriate") ||
+    textToCheck.includes("content some may find") ||
+    textToCheck.includes("content warning") ||
+    textToCheck.includes("not suitable for children") ||
+    textToCheck.includes("contains nudity") ||
+    textToCheck.includes("deemphasize")
+  ) {
+    return false;
+  }
+
+  // Blacklisted sensitive keywords
+  const blockedKeywords = [
+    "inappropriate",
+    "offensive",
+    "deemphasize",
+    "mature",
+    "nudity",
+    "nsfw",
+    "erotic",
+    "porn",
+    "gore",
+    "cannabis",
+    "marijuana",
+    "bloody",
+  ];
+
+  return !blockedKeywords.some((kw) => textToCheck.includes(kw));
+}
+
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const q = searchParams.get("q")?.trim();
@@ -62,8 +109,9 @@ export async function GET(request: NextRequest) {
     query = `mediatype:movies AND (${safeQ})`;
   }
 
-  // Add safe filter to eliminate adult or violent subjects
-  query += " AND -title:death AND -subject:cannabis AND -subject:nudity";
+  // Add strict safe filter to eliminate adult, inappropriate or offensive subjects
+  query +=
+    ' AND -subject:deemphasize AND -subject:mature AND -subject:inappropriate AND -subject:offensive AND -subject:nudity AND -subject:nude AND -subject:adult AND -subject:nsfw AND -subject:erotic AND -subject:horror AND -subject:blood AND -subject:death AND -subject:cannabis AND -description:"inappropriate or offensive" AND -description:"contains content some may find" AND -description:"contains nudity" AND -description:"mature" AND -title:nudity AND -title:nude AND -title:death';
 
   const archiveUrl = new URL("https://archive.org/advancedsearch.php");
   archiveUrl.searchParams.set("q", query);
@@ -75,6 +123,7 @@ export async function GET(request: NextRequest) {
   archiveUrl.searchParams.append("fl[]", "downloads");
   archiveUrl.searchParams.append("fl[]", "rating");
   archiveUrl.searchParams.append("fl[]", "runtime");
+  archiveUrl.searchParams.append("fl[]", "subject");
   archiveUrl.searchParams.set("rows", String(rowsNum));
   archiveUrl.searchParams.set("page", String(page));
   archiveUrl.searchParams.set("sort[]", "downloads desc");
@@ -99,7 +148,7 @@ export async function GET(request: NextRequest) {
     const numFound = data.response?.numFound || 2400;
 
     const formattedMovies: Movie[] = docs
-      .filter((doc) => doc.identifier && doc.title)
+      .filter((doc) => doc.identifier && doc.title && isItemKidSafe(doc))
       .map((doc) => {
         const titleStr = Array.isArray(doc.title)
           ? String(doc.title[0] || "Classic Video")

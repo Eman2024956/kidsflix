@@ -8,6 +8,7 @@ import {
   ExternalLink,
   Sparkles,
   ShieldCheck,
+  ShieldAlert,
   Film,
 } from "lucide-react";
 import { Movie, MovieDetailResponse } from "@/types/movie";
@@ -80,8 +81,18 @@ export const MoviePlayerModal: React.FC<MoviePlayerModalProps> = ({
     };
   }, [movie.identifier]);
 
-  const videoStreamUrl = details?.videoUrl || movie.videoUrl;
-  const embedStreamUrl = movie.embedUrl || `https://archive.org/embed/${movie.identifier}`;
+  const isBlocked =
+    Boolean(details?.blocked) ||
+    Boolean(
+      movie.description &&
+        (movie.description.toLowerCase().includes("inappropriate or offensive") ||
+          movie.description.toLowerCase().includes("some may find inappropriate") ||
+          movie.description.toLowerCase().includes("content warning") ||
+          movie.description.toLowerCase().includes("deemphasize"))
+    );
+
+  const videoStreamUrl = isBlocked ? undefined : details?.videoUrl || movie.videoUrl;
+  const embedStreamUrl = isBlocked ? "" : movie.embedUrl || `https://archive.org/embed/${movie.identifier}`;
 
   return (
     <div
@@ -146,8 +157,8 @@ export const MoviePlayerModal: React.FC<MoviePlayerModalProps> = ({
           </div>
 
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            {/* Player Switcher if direct video exists */}
-            {videoStreamUrl && (
+            {/* Player Switcher if direct video exists and not blocked */}
+            {!isBlocked && videoStreamUrl && (
               <div
                 style={{
                   display: "flex",
@@ -207,11 +218,82 @@ export const MoviePlayerModal: React.FC<MoviePlayerModalProps> = ({
           style={{
             position: "relative",
             width: "100%",
-            backgroundColor: "#000000",
+            backgroundColor: "#0d131f",
             paddingTop: "56.25%", // 16:9 ratio
           }}
         >
-          {playerMode === "direct" && videoStreamUrl ? (
+          {isBlocked ? (
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                padding: "24px",
+                textAlign: "center",
+                background:
+                  "radial-gradient(circle at center, rgba(239, 68, 68, 0.15) 0%, rgba(13, 17, 27, 0.98) 75%)",
+              }}
+            >
+              <div
+                style={{
+                  width: "68px",
+                  height: "68px",
+                  borderRadius: "50%",
+                  background: "rgba(239, 68, 68, 0.2)",
+                  border: "2px solid #ef4444",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "#ef4444",
+                  marginBottom: "16px",
+                  boxShadow: "0 0 24px rgba(239, 68, 68, 0.35)",
+                }}
+              >
+                <ShieldAlert size={36} />
+              </div>
+              <h3
+                className="font-display"
+                style={{
+                  fontSize: "1.35rem",
+                  fontWeight: 800,
+                  color: "#ffffff",
+                  marginBottom: "8px",
+                }}
+              >
+                {isArabic
+                  ? "محتوى محجوب بواسطة درع أمان الأطفال 🛡️"
+                  : "Protected by Kid-Safe Shield 🛡️"}
+              </h3>
+              <p
+                style={{
+                  fontSize: "0.95rem",
+                  color: "var(--text-muted)",
+                  maxWidth: "520px",
+                  lineHeight: 1.6,
+                  marginBottom: "20px",
+                }}
+              >
+                {isArabic
+                  ? "تم حجب هذا الفيديو تلقائياً لأنه قد يحتوي على لقطات أو محتوى غير لائق بالأطفال. نحرص دائماً على أن تكون تجربة كيدزفلكس آمنة 100% لجميع أفراد الأسرة."
+                  : "This video was automatically hidden because it contains content some may find inappropriate or offensive. KidsFlix keeps the platform 100% safe, clean, and fun for children!"}
+              </p>
+              <button
+                onClick={onClose}
+                className="btn-primary"
+                style={{
+                  padding: "10px 24px",
+                  fontSize: "0.95rem",
+                  background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+                  boxShadow: "0 4px 16px rgba(16, 185, 129, 0.35)",
+                }}
+              >
+                {isArabic ? "العودة إلى الكرتون الآمن 🎈" : "Return to Safe Cartoons 🎈"}
+              </button>
+            </div>
+          ) : playerMode === "direct" && videoStreamUrl ? (
             <video
               ref={videoRef}
               src={videoStreamUrl}
@@ -261,10 +343,24 @@ export const MoviePlayerModal: React.FC<MoviePlayerModalProps> = ({
                 <ShieldCheck size={14} />
                 {isArabic ? "مجاني وقانوني" : "100% Free Public Domain"}
               </span>
-              <span className="badge badge-kids">
-                <Sparkles size={14} />
-                {isArabic ? "مناسب للأطفال" : "Kid Safe"}
-              </span>
+              {isBlocked ? (
+                <span
+                  className="badge"
+                  style={{
+                    background: "rgba(239, 68, 68, 0.2)",
+                    color: "#ef4444",
+                    border: "1px solid rgba(239, 68, 68, 0.4)",
+                  }}
+                >
+                  <ShieldAlert size={14} />
+                  {isArabic ? "محجوب للأمان" : "Blocked for Safety"}
+                </span>
+              ) : (
+                <span className="badge badge-kids">
+                  <Sparkles size={14} />
+                  {isArabic ? "مناسب للأطفال" : "Kid Safe"}
+                </span>
+              )}
               <span className="badge badge-hd">
                 <Film size={14} />
                 Archive.org
@@ -300,7 +396,7 @@ export const MoviePlayerModal: React.FC<MoviePlayerModalProps> = ({
               </button>
 
               {/* Download / Archive Link */}
-              {videoStreamUrl && (
+              {!isBlocked && videoStreamUrl && (
                 <a
                   href={videoStreamUrl}
                   target="_blank"
@@ -314,17 +410,19 @@ export const MoviePlayerModal: React.FC<MoviePlayerModalProps> = ({
                 </a>
               )}
 
-              <a
-                href={`https://archive.org/details/${movie.identifier}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn-secondary"
-                style={{ padding: "8px 14px", fontSize: "0.85rem" }}
-                title="View on Internet Archive"
-              >
-                <ExternalLink size={16} />
-                <span>Archive.org</span>
-              </a>
+              {!isBlocked && (
+                <a
+                  href={`https://archive.org/details/${movie.identifier}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-secondary"
+                  style={{ padding: "8px 14px", fontSize: "0.85rem" }}
+                  title="View on Internet Archive"
+                >
+                  <ExternalLink size={16} />
+                  <span>Archive.org</span>
+                </a>
+              )}
             </div>
           </div>
 

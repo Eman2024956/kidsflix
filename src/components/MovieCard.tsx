@@ -135,7 +135,15 @@ export const MovieCard: React.FC<MovieCardProps> = ({
             e.stopPropagation();
             onToggleWatchlist(movie);
           }}
-          title={isInWatchlist ? "Remove from list" : "Add to list"}
+          title={
+            isInWatchlist
+              ? isArabic
+                ? "إزالة من المفضلة"
+                : "Remove from list"
+              : isArabic
+              ? "أضف إلى المفضلة"
+              : "Add to list"
+          }
           style={{
             position: "absolute",
             top: "10px",
@@ -254,7 +262,9 @@ export const MovieCard: React.FC<MovieCardProps> = ({
               {formatDownloads(movie.downloads)}
             </span>
           ) : (
-            <span style={{ color: "var(--accent-green)" }}>Free Stream</span>
+            <span style={{ color: "var(--accent-green)" }}>
+              {isArabic ? "مشاهدة مجانية" : "Free Stream"}
+            </span>
           )}
         </div>
       </div>

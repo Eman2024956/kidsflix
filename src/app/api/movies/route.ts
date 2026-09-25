@@ -93,8 +93,8 @@ export async function GET(request: NextRequest) {
     query = "mediatype:movies AND (subject:comedy OR collection:feature_films OR title:keaton OR title:chaplin) AND -subject:animation";
   } else if (category === "popeye") {
     query = "mediatype:movies AND (title:popeye OR subject:popeye)";
-  } else if (category === "superman") {
-    query = "mediatype:movies AND (title:superman OR subject:superman) AND subject:animation";
+  } else if (category === "superheroes" || category === "superman") {
+    query = "mediatype:movies AND (title:superman OR subject:superman OR title:superhero OR subject:superhero)";
   } else if (category === "classic") {
     query = "mediatype:movies AND (collection:classic_cartoons OR subject:cartoon)";
   } else if (category === "fairytales" || category === "fairytale") {

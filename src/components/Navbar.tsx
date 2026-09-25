@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-import { Search, Popcorn, X, ChevronDown, Check, Sun, Moon } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Search, Popcorn, X, ChevronDown, Check, Sun, Moon, Heart } from "lucide-react";
 import { KidProfile } from "@/types/movie";
 
 interface NavbarProps {
@@ -35,6 +36,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   theme,
   onToggleTheme,
 }) => {
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
@@ -222,6 +224,50 @@ export const Navbar: React.FC<NavbarProps> = ({
             )}
           </form>
 
+          {/* My Favorites Link — desktop only */}
+          <button
+            onClick={() => router.push("/favorites")}
+            title={isArabic ? "قائمتي المفضلة" : "My Favorites List"}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+              position: "relative",
+              background: "rgba(255,42,109,0.1)",
+              border: "1px solid rgba(255,42,109,0.3)",
+              borderRadius: "20px",
+              padding: "7px 14px",
+              color: "#ff2a6d",
+              fontSize: "0.82rem",
+              fontWeight: 700,
+              cursor: "pointer",
+              transition: "all 0.2s ease",
+              whiteSpace: "nowrap",
+            }}
+          >
+            <Heart size={15} fill="rgba(255,42,109,0.7)" color="#ff2a6d" />
+            <span className="mylist-label">{isArabic ? "قائمتي" : "My List"}</span>
+            {watchlistCount > 0 && (
+              <span
+                style={{
+                  minWidth: "18px",
+                  height: "18px",
+                  borderRadius: "9px",
+                  background: "#ff2a6d",
+                  color: "#fff",
+                  fontSize: "0.65rem",
+                  fontWeight: 900,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  padding: "0 4px",
+                }}
+              >
+                {watchlistCount}
+              </span>
+            )}
+          </button>
+
           {/* Light / Dark Mode Toggle */}
           <button
             onClick={onToggleTheme}
@@ -348,29 +394,35 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
       </div>
 
-      {/* Categories Bar with Dynamic Counters */}
+      {/* Categories Bar with Dynamic Counters - Two Rows */}
       <div
         id="categories-carousel"
         style={{
           borderTop: theme === "light" ? "1px solid rgba(0, 0, 0, 0.06)" : "1px solid rgba(255, 255, 255, 0.06)",
           padding: "8px 16px",
           background: theme === "light" ? "rgba(255, 255, 255, 0.7)" : "rgba(10, 14, 24, 0.6)",
+          display: "flex",
+          flexDirection: "column",
+          gap: "8px",
         }}
       >
+        {/* Row 1 */}
         <div
+          className="category-row-scroll"
           style={{
             maxWidth: "1480px",
             margin: "0 auto",
+            width: "100%",
             display: "flex",
             alignItems: "center",
             gap: "8px",
             overflowX: "auto",
             scrollbarWidth: "none",
             WebkitOverflowScrolling: "touch",
-            paddingBottom: "4px",
+            paddingBottom: "2px",
           }}
         >
-          {categories.map((cat) => {
+          {categories.slice(0, 7).map((cat) => {
             const isActive = activeCategory === cat.id;
             return (
               <button
@@ -404,7 +456,73 @@ export const Navbar: React.FC<NavbarProps> = ({
               >
                 <span>{cat.icon}</span>
                 <span>{isArabic ? cat.labelAr : cat.labelEn}</span>
-                {/* Category Counter Pill */}
+                <span
+                  style={{
+                    background: isActive ? "rgba(0, 0, 0, 0.25)" : "rgba(255, 183, 3, 0.15)",
+                    color: isActive ? "#ffffff" : "var(--accent-yellow)",
+                    fontSize: "0.72rem",
+                    fontWeight: 800,
+                    padding: "1px 7px",
+                    borderRadius: "10px",
+                  }}
+                >
+                  {formatCount(cat.count)}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Row 2 */}
+        <div
+          className="category-row-scroll"
+          style={{
+            maxWidth: "1480px",
+            margin: "0 auto",
+            width: "100%",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            overflowX: "auto",
+            scrollbarWidth: "none",
+            WebkitOverflowScrolling: "touch",
+            paddingBottom: "2px",
+          }}
+        >
+          {categories.slice(7).map((cat) => {
+            const isActive = activeCategory === cat.id;
+            return (
+              <button
+                key={cat.id}
+                onClick={() => onSelectCategory(cat.id)}
+                style={{
+                  flexShrink: 0,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  background: isActive
+                    ? "var(--gradient-kids)"
+                    : theme === "light"
+                    ? "rgba(0, 0, 0, 0.04)"
+                    : "rgba(255, 255, 255, 0.06)",
+                  color: isActive ? "#ffffff" : "var(--text-main)",
+                  border: isActive
+                    ? "1px solid rgba(255, 42, 109, 0.6)"
+                    : theme === "light"
+                    ? "1px solid rgba(0, 0, 0, 0.08)"
+                    : "1px solid rgba(255, 255, 255, 0.08)",
+                  padding: "6px 14px",
+                  borderRadius: "20px",
+                  fontSize: "0.85rem",
+                  fontWeight: isActive ? 800 : 600,
+                  cursor: "pointer",
+                  boxShadow: isActive ? "0 4px 15px rgba(255, 42, 109, 0.4)" : "none",
+                  transition: "all 0.2s ease",
+                  touchAction: "manipulation",
+                }}
+              >
+                <span>{cat.icon}</span>
+                <span>{isArabic ? cat.labelAr : cat.labelEn}</span>
                 <span
                   style={{
                     background: isActive ? "rgba(0, 0, 0, 0.25)" : "rgba(255, 183, 3, 0.15)",
@@ -424,6 +542,9 @@ export const Navbar: React.FC<NavbarProps> = ({
       </div>
 
       <style jsx>{`
+        .category-row-scroll::-webkit-scrollbar {
+          display: none;
+        }
         @media (min-width: 768px) {
           .md-flex {
             display: flex !important;

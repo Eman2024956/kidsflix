@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useRouter } from "next/navigation";
 import { Popcorn, LayoutGrid, Heart, Search, Sun, Moon } from "lucide-react";
 
 interface MobileBottomNavProps {
@@ -22,6 +23,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
   onToggleTheme,
   onOpenSearch,
 }) => {
+  const router = useRouter();
   return (
     <nav className="mobile-bottom-nav">
       {/* 1. Home */}
@@ -70,11 +72,11 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
         <span className="mobile-nav-label">{isArabic ? "بحث" : "Search"}</span>
       </button>
 
-      {/* 4. Watchlist */}
+      {/* 4. Watchlist → /favorites */}
       <button
-        onClick={() => onSelectCategory("watchlist")}
+        onClick={() => router.push("/favorites")}
         className={`mobile-nav-btn ${activeCategory === "watchlist" ? "active" : ""}`}
-        aria-label="My Watchlist"
+        aria-label="My Favorites"
       >
         <div className="mobile-nav-icon" style={{ position: "relative" }}>
           <Heart size={22} fill={activeCategory === "watchlist" ? "var(--accent-pink)" : "none"} />

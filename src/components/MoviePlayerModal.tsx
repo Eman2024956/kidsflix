@@ -35,7 +35,7 @@ interface MoviePlayerModalProps {
   onClose: () => void;
   isInWatchlist: boolean;
   onToggleWatchlist: (movie: Movie) => void;
-  onPlayNext: (movie: Movie) => void;
+  onPlayNext?: (movie: Movie) => void;
   relatedMovies: Movie[];
   isArabic: boolean;
 }
@@ -497,7 +497,7 @@ export const MoviePlayerModal: React.FC<MoviePlayerModalProps> = ({
                   .map((rel) => (
                     <div
                       key={rel.identifier}
-                      onClick={() => onPlayNext(rel)}
+                      onClick={() => onPlayNext?.(rel)}
                       style={{
                         flexShrink: 0,
                         width: "160px",

@@ -13,6 +13,23 @@ import {
 } from "lucide-react";
 import { Movie, MovieDetailResponse } from "@/types/movie";
 
+/** Strip HTML tags and decode common HTML entities — client-side safety layer */
+function stripHtml(raw?: string | null): string {
+  if (!raw) return "";
+  return raw
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&quot;/gi, '"')
+    .replace(/&apos;/gi, "'")
+    .replace(/&#39;/gi, "'")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/&[a-z]+;/gi, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 interface MoviePlayerModalProps {
   movie: Movie;
   onClose: () => void;
@@ -447,7 +464,7 @@ export const MoviePlayerModal: React.FC<MoviePlayerModalProps> = ({
                 color: "var(--text-muted)",
               }}
             >
-              {details?.description || movie.description}
+              {stripHtml(details?.description || movie.description)}
             </p>
           </div>
 

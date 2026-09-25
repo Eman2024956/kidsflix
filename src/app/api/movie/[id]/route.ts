@@ -1,6 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
 import { MovieDetailResponse, MovieFile } from "@/types/movie";
 
+/** Strip HTML tags, decode common entities, collapse whitespace */
+function cleanDescription(raw?: string): string {
+  if (!raw) return "";
+  return raw
+    .replace(/<[^>]+>/g, " ")          // remove all HTML tags
+    .replace(/&nbsp;/gi, " ")          // non-breaking space
+    .replace(/&amp;/gi, "&")           // &
+    .replace(/&quot;/gi, '"')          // "
+    .replace(/&apos;/gi, "'")          // '
+    .replace(/&#39;/gi, "'")           // '
+    .replace(/&lt;/gi, "<")            // <
+    .replace(/&gt;/gi, ">")            // >
+    .replace(/&[a-z]+;/gi, " ")        // any other entity
+    .replace(/\s+/g, " ")             // collapse whitespace
+    .trim();
+}
+
 interface ArchiveMetadataFile {
   name: string;
   source?: string;
@@ -134,7 +151,7 @@ export async function GET(
     const detail: MovieDetailResponse = {
       identifier: id,
       title: data.metadata?.title || id,
-      description: data.metadata?.description || "",
+      description: cleanDescription(data.metadata?.description),
       year: data.metadata?.year || data.metadata?.date?.substring(0, 4) || "Classic",
       date: data.metadata?.date,
       licenseurl: data.metadata?.licenseurl || "http://creativecommons.org/licenses/publicdomain/",
